@@ -33,20 +33,48 @@ function curl_request($url) {
     return json_decode($response, true);
 }
 
+// Function to get location data from ipinfo.io
+function get_location_data($ip, $ipinfo_api_key) {
+    $url = "http://ipinfo.io/{$ip}?token={$ipinfo_api_key}";
+    return curl_request($url);
+}
+
+// Function to get weather data from openweathermap.org
+function get_weather_data($lat, $lon, $openweather_api_key) {
+    $url = "http://api.openweathermap.org/data/2.5/weather?lat={$lat}&lon={$lon}&appid={$openweather_api_key}&units=metric";
+    return curl_request($url);
+}
+
 // Handle the visitor's name
 $visitor_name = isset($_GET['visitor_name']) ? htmlspecialchars($_GET['visitor_name']) : 'Visitor';
 
 $client_ip = get_client_ip();
-$weatherapi_key = WEATHERAPI_KEY;
+$ipinfo_api_key = IPINFO_API_KEY;
+$openweather_api_key = OPENWEATHER_API_KEY;
 
-$weather_data = curl_request("http://api.weatherapi.com/v1/current.json?key={$weatherapi_key}&q={$client_ip}");
+$location_data = get_location_data($client_ip, $ipinfo_api_key);
+
+if ($location_data === null) {
+    $lat = '40.7128'; // Default latitude for New York
+    $lon = '-74.0060'; // Default longitude for New York
+    $city = 'New York';
+} else {
+    $location = explode(',', $location_data['loc']);
+    $lat = $location[0];
+    $lon = $location[1];
+    $city = $location_data['city'];
+}
+
+$weather_data = get_weather_data($lat, $lon, $openweather_api_key);
 
 if ($weather_data === null) {
-    $city = 'New York';
     $temperature = 11; // Default temperature in degrees Celsius
 } else {
-    $city = $weather_data['location']['name'];
-    $temperature = $weather_data['current']['temp_c'];
+    $temperature = 23; // Fallback temperature in case API can't be parsed
+
+    if (is_array($weather_data) && is_array($weather_data['main']) && array_key_exists('temp', $weather_data['main'])) {
+        $temperature = $weather_data['main']['temp'];
+    }
 }
 
 $response = [
