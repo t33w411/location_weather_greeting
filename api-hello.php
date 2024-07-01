@@ -45,7 +45,7 @@ if ($weather_data === null) {
     $city = 'New York';
     $temperature = 11; // Default temperature in degrees Celsius
 } else {
-    $city = $weather_data['location']['name'];
+    $city = $weather_data['location']['region'];
     $temperature = $weather_data['current']['temp_c'];
 }
 
