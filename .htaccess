@@ -1,0 +1,8 @@
+<IfModule mod_rewrite.c>
+    Options +FollowSymlinks
+  # Options +SymLinksIfOwnerMatch
+    RewriteEngine On
+  # RewriteBase /
+</IfModule>
+
+RewriteRule ^api/([a-z0-9_-]+)/?$	api-$1.php [QSA,NC,L]
